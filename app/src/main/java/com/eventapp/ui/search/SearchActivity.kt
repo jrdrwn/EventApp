@@ -1,23 +1,27 @@
 package com.eventapp.ui.search
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.eventapp.ListEventAdapter
 import com.eventapp.R
 import com.eventapp.databinding.ActivitySearchBinding
+import com.eventapp.ui.ViewModelFactory
+import com.eventapp.ui.adapter.ListEventAdapter
+import com.eventapp.utils.Result
 
 class SearchActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySearchBinding
 
-    private val viewModel: SearchActivityViewModel by viewModels()
+    private val viewModel: SearchActivityViewModel by viewModels {
+        ViewModelFactory.getInstance(
+            this@SearchActivity
+        )
+    }
 
     companion object {
         const val EXTRA_SEARCH = "extra_search"
@@ -39,7 +43,7 @@ class SearchActivity : AppCompatActivity() {
         val keyword = intent.getStringExtra(EXTRA_SEARCH) ?: ""
 
         if (savedInstanceState == null) {
-            viewModel.searchEvent(keyword)
+            viewModel.searchEvents(keyword)
         }
 
 
@@ -52,37 +56,40 @@ class SearchActivity : AppCompatActivity() {
                 searchView.hide()
                 binding.searchView.hide()
                 binding.rvSearch.adapter = null
-                viewModel.searchEvent(searchBar.text.toString())
+                viewModel.searchEvents(searchBar.text.toString())
                 false
             }
         }
 
-        viewModel.listEvent.observe(this) {
-            binding.rvSearch.layoutManager = LinearLayoutManager(this@SearchActivity)
-            val adapter = ListEventAdapter(it)
-            binding.rvSearch.adapter = adapter
-            binding.errorPage.visibility = View.GONE
-        }
+        viewModel.listEvents.observe(this) { result ->
+            if (result != null) {
+                when (result) {
+                    is Result.Loading -> {
+                        binding.progressBar.visibility = View.VISIBLE
+                    }
 
-        viewModel.resultText.observe(this) {
-            Log.d("SearchActivity", "onCreate: $it")
-            binding.searchNotFound.visibility = if (it.isEmpty()) View.GONE else View.VISIBLE
-            binding.searchNotFound.text = it
-        }
+                    is Result.Success -> {
+                        binding.progressBar.visibility = View.GONE
+                        val listEventData = result.data
+                        binding.rvSearch.layoutManager = LinearLayoutManager(this@SearchActivity)
+                        val adapter = ListEventAdapter(listEventData)
+                        binding.rvSearch.adapter = adapter
+                        binding.errorPage.visibility = View.GONE
+                    }
 
-        viewModel.isLoading.observe(this) {
-            Log.d("isLoading", "onCreate: $it")
-            binding.progressBar.isVisible = it
-        }
+                    is Result.Error -> {
+                        binding.progressBar.visibility = View.GONE
+                        binding.errorPage.visibility =
+                            if (result.error.isNotEmpty()) View.VISIBLE else View.GONE
+                        binding.errorMessage.text = result.error
+                    }
+                }
 
-        viewModel.errorMessage.observe(this) {
-            Log.d("errorMessage", "onCreate: $it")
-            binding.errorPage.visibility = if (it.isNotEmpty()) View.VISIBLE else View.GONE
-            binding.errorMessage.text = it
+            }
         }
 
         binding.btnTryAgain.setOnClickListener {
-            viewModel.searchEvent(binding.searchBar.text.toString())
+            viewModel.searchEvents(binding.searchBar.text.toString())
             binding.errorPage.visibility = View.GONE
 
         }

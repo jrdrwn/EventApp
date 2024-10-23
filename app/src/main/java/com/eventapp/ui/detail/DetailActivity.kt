@@ -9,9 +9,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
 import com.eventapp.R
 import com.eventapp.databinding.ActivityDetailBinding
+import com.eventapp.ui.ViewModelFactory
+import com.eventapp.utils.Result
 import com.eventapp.utils.loadImage
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -21,7 +22,6 @@ class DetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailBinding
 
-    private val viewModel: DetailActivityViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -29,6 +29,10 @@ class DetailActivity : AppCompatActivity() {
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val factory: ViewModelFactory = ViewModelFactory.getInstance(this)
+        val viewModel: DetailActivityViewModel by viewModels {
+            factory
+        }
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
             title = "Detail Event"
@@ -41,33 +45,56 @@ class DetailActivity : AppCompatActivity() {
             viewModel.getDetailEvent(eventId)
         }
 
+        viewModel.event.observe(this) { result ->
+            if (result != null) {
+                when (result) {
+                    is Result.Loading -> {
+                        binding.progressBar.visibility = View.VISIBLE
+                    }
 
-        viewModel.event.observe(this) {
-            supportActionBar?.title = it.name
+                    is Result.Success -> {
+                        binding.progressBar.visibility = View.GONE
+                        val eventData = result.data
+                        supportActionBar?.title = eventData.name
 
-            binding.apply {
-                detailBg.loadImage(it.mediaCover)
-                binding.detailName.text = it.name
-                binding.detailOwnerName.text = getString(R.string.penyelenggara, it.ownerName)
-                binding.detailTime.text =
-                    getString(R.string.waktu, convertToHumanReadable(it.beginTime))
-                binding.detailQuota.text =
-                    getString(
-                        R.string.sisa_kuota,
-                        String.format(Locale.getDefault(), "%d", it.quota - it.registrants)
-                    )
+                        binding.apply {
+                            detailBg.loadImage(eventData.mediaCover)
+                            binding.detailName.text = eventData.name
+                            binding.detailOwnerName.text =
+                                getString(R.string.penyelenggara, eventData.ownerName)
+                            binding.detailTime.text =
+                                getString(
+                                    R.string.waktu,
+                                    convertToHumanReadable(eventData.beginTime)
+                                )
+                            binding.detailQuota.text =
+                                getString(
+                                    R.string.sisa_kuota,
+                                    String.format(
+                                        Locale.getDefault(),
+                                        "%d",
+                                        eventData.quota - eventData.registrants
+                                    )
+                                )
 
-                binding.detailDesc.text = HtmlCompat.fromHtml(
-                    it.description,
-                    HtmlCompat.FROM_HTML_MODE_LEGACY
-                )
-                binding.detailRegister.visibility = View.VISIBLE
-                binding.errorPage.visibility = View.GONE
+                            binding.detailDesc.text = HtmlCompat.fromHtml(
+                                eventData.description,
+                                HtmlCompat.FROM_HTML_MODE_LEGACY
+                            )
+                            binding.detailRegister.visibility = View.VISIBLE
+                            binding.errorPage.visibility = View.GONE
+                        }
+                    }
+
+                    is Result.Error -> {
+                        binding.progressBar.visibility = View.GONE
+                        binding.errorPage.visibility =
+                            if (result.error.isNotEmpty()) View.VISIBLE else View.GONE
+                        binding.errorMessage.text = result.error
+                    }
+                }
             }
-        }
 
-        viewModel.isLoading.observe(this) {
-            binding.progressBar.isVisible = it
         }
 
         binding.detailRegister.setOnClickListener {
@@ -79,11 +106,6 @@ class DetailActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-
-        viewModel.errorMessage.observe(this) {
-            binding.errorPage.visibility = if (it.isNotEmpty()) View.VISIBLE else View.GONE
-            binding.errorMessage.text = it
-        }
 
         binding.btnTryAgain.setOnClickListener {
             viewModel.getDetailEvent(eventId)

@@ -4,12 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.eventapp.ListEventAdapter
 import com.eventapp.databinding.FragmentFinishedBinding
+import com.eventapp.ui.ViewModelFactory
+import com.eventapp.ui.adapter.ListEventAdapter
+import com.eventapp.utils.Result
 
 class FinishedFragment : Fragment() {
 
@@ -17,26 +18,45 @@ class FinishedFragment : Fragment() {
 
     private val binding get() = _binding!!
 
-    private val viewModel: FinishedViewModel by viewModels()
+    private val viewModel: FinishedViewModel by viewModels {
+        ViewModelFactory.getInstance(
+            requireActivity()
+        )
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.listEvent.observe(viewLifecycleOwner) {
 
-            binding.rvFinished.layoutManager = LinearLayoutManager(requireActivity())
-            val adapter = ListEventAdapter(it)
-            binding.rvFinished.adapter = adapter
-            binding.errorPage.visibility = View.GONE
+
+        if (savedInstanceState == null) {
+            viewModel.getFinishedEvent(40)
         }
 
-        viewModel.isLoading.observe(viewLifecycleOwner) {
-            binding.progressBar.isVisible = it
-        }
+        viewModel.listEvents.observe(viewLifecycleOwner) { result ->
+            if (result != null) {
+                when (result) {
+                    is Result.Loading -> {
+                        binding.progressBar.visibility = View.VISIBLE
+                    }
 
-        viewModel.errorMessage.observe(viewLifecycleOwner) {
+                    is Result.Success -> {
+                        binding.progressBar.visibility = View.GONE
+                        val listEventData = result.data
+                        binding.rvFinished.layoutManager = LinearLayoutManager(requireActivity())
+                        val adapter = ListEventAdapter(listEventData)
+                        binding.rvFinished.adapter = adapter
+                        binding.errorPage.visibility = View.GONE
+                    }
 
-            binding.errorPage.visibility = if (it.isNotEmpty()) View.VISIBLE else View.GONE
-            binding.errorMessage.text = it
+                    is Result.Error -> {
+                        binding.progressBar.visibility = View.GONE
+                        binding.errorPage.visibility =
+                            if (result.error.isNotEmpty()) View.VISIBLE else View.GONE
+                        binding.errorMessage.text = result.error
+                    }
+                }
+
+            }
         }
     }
 
@@ -48,12 +68,9 @@ class FinishedFragment : Fragment() {
         _binding = FragmentFinishedBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        if (savedInstanceState == null) {
-            viewModel.getEvents()
-        }
 
         binding.btnTryAgain.setOnClickListener {
-            viewModel.getEvents()
+            viewModel.getFinishedEvent(40)
             binding.errorPage.visibility = View.GONE
         }
 

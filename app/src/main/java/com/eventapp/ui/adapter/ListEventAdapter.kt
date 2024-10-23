@@ -1,11 +1,11 @@
-package com.eventapp
+package com.eventapp.ui.adapter
 
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
-import com.eventapp.data.response.ListEventsItem
+import com.eventapp.data.remote.response.ListEventsItem
 import com.eventapp.databinding.HorizontalRowEventBinding
 import com.eventapp.databinding.ItemRowEventBinding
 import com.eventapp.ui.detail.DetailActivity

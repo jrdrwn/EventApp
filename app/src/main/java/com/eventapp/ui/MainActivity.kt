@@ -1,4 +1,4 @@
-package com.eventapp
+package com.eventapp.ui
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,6 +9,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.eventapp.R
 import com.eventapp.databinding.ActivityMainBinding
 import com.eventapp.ui.search.SearchActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView

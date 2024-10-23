@@ -1,47 +1,16 @@
 package com.eventapp.ui.finished
 
-import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.eventapp.data.response.EventResponse
-import com.eventapp.data.response.ListEventsItem
-import com.eventapp.data.retrofit.ApiConfig
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import com.eventapp.data.remote.response.ListEventsItem
+import com.eventapp.repository.FinishedEventsRepository
+import com.eventapp.utils.Result
 
-class FinishedViewModel : ViewModel() {
-    private val _listEvent = MutableLiveData<List<ListEventsItem>>()
-    val listEvent: LiveData<List<ListEventsItem>> = _listEvent
+class FinishedViewModel(private val listEventsRepository: FinishedEventsRepository) : ViewModel() {
+    lateinit var listEvents: LiveData<Result<List<ListEventsItem>>>
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
-
-
-    private val _errorMessage = MutableLiveData<String>()
-    val errorMessage: LiveData<String> = _errorMessage
-
-    fun getEvents(limit: Int = 40) {
-        _isLoading.value = true
-        val client = ApiConfig.getApiService().getFinishedEvents(limit)
-        client.enqueue(object : Callback<EventResponse> {
-            override fun onResponse(call: Call<EventResponse>, response: Response<EventResponse>) {
-                _isLoading.value = false
-                if (response.isSuccessful) {
-                    _listEvent.value = response.body()?.listEvents
-                    _errorMessage.value = ""
-                } else {
-                    Log.e("FinishedViewModel", response.message())
-                    _errorMessage.value = response.message()
-                }
-            }
-
-            override fun onFailure(call: Call<EventResponse>, t: Throwable) {
-                _isLoading.value = false
-                _errorMessage.value = t.message.toString()
-                Log.e("FinishedViewModel", "onFailure: ${t.message.toString()}")
-            }
-        })
+    fun getFinishedEvent(limit: Int): LiveData<Result<List<ListEventsItem>>> {
+        listEvents = listEventsRepository.getFinishedEvent(limit)
+        return listEvents
     }
 }

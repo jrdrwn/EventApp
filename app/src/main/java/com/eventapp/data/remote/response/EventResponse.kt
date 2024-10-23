@@ -1,4 +1,4 @@
-package com.eventapp.data.response
+package com.eventapp.data.remote.response
 
 import com.google.gson.annotations.SerializedName
 

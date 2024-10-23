@@ -1,4 +1,4 @@
-package com.eventapp.data.retrofit
+package com.eventapp.data.remote.retrofit
 
 import com.eventapp.BuildConfig
 import okhttp3.OkHttpClient
