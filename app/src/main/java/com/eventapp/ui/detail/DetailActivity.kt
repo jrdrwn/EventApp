@@ -9,18 +9,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.HtmlCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.bumptech.glide.Glide
+import androidx.core.view.isVisible
 import com.eventapp.R
 import com.eventapp.databinding.ActivityDetailBinding
+import com.eventapp.utils.loadImage
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class DetailActivity : AppCompatActivity() {
-
-    companion object {
-        const val EXTRA_EVENT_ID = "extra_event_id"
-    }
 
     private lateinit var binding: ActivityDetailBinding
 
@@ -48,33 +45,29 @@ class DetailActivity : AppCompatActivity() {
         viewModel.event.observe(this) {
             supportActionBar?.title = it.name
 
-            Glide.with(this)
-                .load(it.mediaCover)
-                .into(binding.detailBg)
+            binding.apply {
+                detailBg.loadImage(it.mediaCover)
+                binding.detailName.text = it.name
+                binding.detailOwnerName.text = getString(R.string.penyelenggara, it.ownerName)
+                binding.detailTime.text =
+                    getString(R.string.waktu, convertToHumanReadable(it.beginTime))
+                binding.detailQuota.text =
+                    getString(
+                        R.string.sisa_kuota,
+                        String.format(Locale.getDefault(), "%d", it.quota - it.registrants)
+                    )
 
-
-            binding.detailName.text = it.name
-            binding.detailOwnerName.text = getString(R.string.penyelenggara, it.ownerName)
-            binding.detailTime.text =
-                getString(R.string.waktu, convertToHumanReadable(it.beginTime))
-            binding.detailQuota.text =
-                getString(
-                    R.string.sisa_kuota,
-                    String.format(Locale.getDefault(), "%d", it.quota - it.registrants)
+                binding.detailDesc.text = HtmlCompat.fromHtml(
+                    it.description,
+                    HtmlCompat.FROM_HTML_MODE_LEGACY
                 )
-
-            binding.detailDesc.text = HtmlCompat.fromHtml(
-                it.description,
-                HtmlCompat.FROM_HTML_MODE_LEGACY
-            )
-            binding.detailRegister.visibility = View.VISIBLE
-            binding.errorPage.visibility = View.GONE
-
-
+                binding.detailRegister.visibility = View.VISIBLE
+                binding.errorPage.visibility = View.GONE
+            }
         }
 
         viewModel.isLoading.observe(this) {
-            binding.progressBar.visibility = if (it) View.VISIBLE else View.GONE
+            binding.progressBar.isVisible = it
         }
 
         binding.detailRegister.setOnClickListener {
@@ -115,5 +108,9 @@ class DetailActivity : AppCompatActivity() {
         val dateTime = LocalDateTime.parse(dateTimeString, formatter)
         val humanReadableFormatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy hh:mm a")
         return dateTime.format(humanReadableFormatter)
+    }
+
+    companion object {
+        const val EXTRA_EVENT_ID = "extra_event_id"
     }
 }

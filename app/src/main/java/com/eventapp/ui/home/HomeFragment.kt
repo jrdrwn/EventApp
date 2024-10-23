@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -37,6 +38,14 @@ class HomeFragment : Fragment() {
 
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        getFinishedEvent()
+        getUpcomingEvent()
+
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -53,9 +62,6 @@ class HomeFragment : Fragment() {
             finishedViewModel.getEvents(limit)
             binding.finishedErrorPage.visibility = View.GONE
         }
-
-        getFinishedEvent()
-        getUpcomingEvent()
 
         return root
     }
@@ -97,7 +103,7 @@ class HomeFragment : Fragment() {
 
         upcomingViewModel.isLoading.observe(viewLifecycleOwner) {
             Log.d("HomeFragment", "getUpcomingEvent: $it")
-            binding.upcomingProgressBar.visibility = if (it) View.VISIBLE else View.GONE
+            binding.upcomingProgressBar.isVisible = it
         }
 
         upcomingViewModel.errorMessage.observe(viewLifecycleOwner) {

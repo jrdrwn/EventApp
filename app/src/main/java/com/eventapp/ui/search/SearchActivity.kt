@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.eventapp.ListEventAdapter
 import com.eventapp.R
@@ -71,7 +72,7 @@ class SearchActivity : AppCompatActivity() {
 
         viewModel.isLoading.observe(this) {
             Log.d("isLoading", "onCreate: $it")
-            binding.progressBar.visibility = if (it) View.VISIBLE else View.GONE
+            binding.progressBar.isVisible = it
         }
 
         viewModel.errorMessage.observe(this) {

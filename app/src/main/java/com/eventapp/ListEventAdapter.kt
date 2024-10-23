@@ -2,47 +2,48 @@ package com.eventapp
 
 import android.content.Intent
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import androidx.viewbinding.ViewBinding
 import com.eventapp.data.response.ListEventsItem
+import com.eventapp.databinding.HorizontalRowEventBinding
+import com.eventapp.databinding.ItemRowEventBinding
 import com.eventapp.ui.detail.DetailActivity
+import com.eventapp.utils.loadImage
 
 class ListEventAdapter(
     private val listEvent: List<ListEventsItem>,
     private val horizontal: Boolean = false
 ) :
     RecyclerView.Adapter<ListEventAdapter.ListViewHolder>() {
-    class ListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val cardTitle: TextView = itemView.findViewById(R.id.card_title)
-        val cardSummary: TextView = itemView.findViewById(R.id.card_summary)
-        val cardCover: ImageView = itemView.findViewById(R.id.card_cover)
-    }
+    class ListViewHolder(var binding: ViewBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
     ): ListViewHolder {
-        val view: View =
-            LayoutInflater.from(parent.context).inflate(
-                if (horizontal) R.layout.horizontal_row_event else R.layout.item_row_event,
-                parent,
-                false
-            )
-        return ListViewHolder(view)
+        val binding = (if (horizontal) HorizontalRowEventBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        ) else ItemRowEventBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+        return ListViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
         val data = listEvent[position]
-        holder.cardTitle.text = data.name
-        holder.cardSummary.text = data.summary
-        Glide.with(holder.itemView.context)
-            .load(data.imageLogo)
-            .into(holder.cardCover)
-
+        if (horizontal) {
+            val binding = holder.binding as HorizontalRowEventBinding
+            binding.cardTitle.text = data.name
+            binding.cardSummary.text = data.summary
+            binding.cardCover.loadImage(data.imageLogo)
+        } else {
+            val binding = holder.binding as ItemRowEventBinding
+            binding.cardTitle.text = data.name
+            binding.cardSummary.text = data.summary
+            binding.cardCover.loadImage(data.imageLogo)
+        }
 
         holder.itemView.setOnClickListener {
             val intent = Intent(holder.itemView.context, DetailActivity::class.java)
@@ -53,4 +54,5 @@ class ListEventAdapter(
     }
 
     override fun getItemCount(): Int = listEvent.size
+
 }
