@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -11,6 +12,7 @@ import com.eventapp.databinding.FragmentHomeBinding
 import com.eventapp.ui.ViewModelFactory
 import com.eventapp.ui.adapter.ListEventAdapter
 import com.eventapp.ui.finished.FinishedViewModel
+import com.eventapp.ui.settings.SettingsViewModel
 import com.eventapp.ui.upcoming.UpcomingViewModel
 import com.eventapp.utils.Result
 
@@ -32,6 +34,9 @@ class HomeFragment : Fragment() {
             requireActivity()
         )
     }
+    private val settingsViewModel: SettingsViewModel by viewModels {
+        ViewModelFactory.getInstance(requireActivity())
+    }
 
     private val limit = 5
 
@@ -40,6 +45,14 @@ class HomeFragment : Fragment() {
         if (savedInstanceState == null) {
             finishedViewModel.getFinishedEvent(limit)
             upcomingViewModel.getUpcomingEvent(limit)
+        }
+
+        settingsViewModel.getThemeSettings().observe(viewLifecycleOwner) { isDarkModeActive ->
+            if (isDarkModeActive) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            }
         }
 
         getFinishedEvent()

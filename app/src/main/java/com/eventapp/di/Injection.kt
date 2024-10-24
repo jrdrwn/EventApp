@@ -3,6 +3,7 @@ package com.eventapp.di
 import android.content.Context
 import com.eventapp.data.remote.retrofit.ApiConfig
 import com.eventapp.repository.EventRepository
+import com.eventapp.repository.FavoriteEventRepository
 import com.eventapp.repository.FinishedEventsRepository
 import com.eventapp.repository.SearchEventsRepository
 import com.eventapp.repository.UpcomingEventsRepository
@@ -26,5 +27,9 @@ object Injection {
     fun provideSearchEventsRepository(context: Context): SearchEventsRepository {
         val apiService = ApiConfig.getApiService()
         return SearchEventsRepository.getInstance(apiService)
+    }
+
+    fun provideFavoriteEventRepository(context: Context): FavoriteEventRepository {
+        return FavoriteEventRepository(context)
     }
 }

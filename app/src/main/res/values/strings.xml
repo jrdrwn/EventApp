@@ -22,4 +22,6 @@
     <string name="searchbar_hint">Search Events</string>
     <string name="this_activity">test</string>
     <string name="search_hint">Search Events\n</string>
+    <string name="title_favorite">Favorite</string>
+    <string name="title_settings">Settings</string>
 </resources>

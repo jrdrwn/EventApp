@@ -27,6 +27,7 @@ class SearchActivity : AppCompatActivity() {
         const val EXTRA_SEARCH = "extra_search"
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

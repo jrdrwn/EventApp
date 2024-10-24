@@ -1,6 +1,7 @@
 <resources>
     <!-- Base application theme. -->
     <style name="Theme.EventApp" parent="Theme.Material3.DayNight">
+        <!--create color style-->
 
     </style>
 </resources>
